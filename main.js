@@ -8,6 +8,7 @@ $(document).ready(function(){
 
   $("#file-input").change((e) => {
     handleUploadFile(e);
+    $("#result").text("");
   });
   
   $("#sum-up").click(() => calculateTotal());
@@ -60,11 +61,14 @@ const handleSaveData = (index) => {
   }
 
   isHead = !isHead;
-  console.log(data);
 }
 
 const displayData = (activities) => {
-  const dataTable = document.getElementById("data-table");
+  const dataTable = $("#data-table");
+
+  // remove tbody of the previous json data
+  dataTable.find('tbody').remove();
+
   const tbody = document.createElement("tbody");
 
   activities.map((activity, index) => {
@@ -81,7 +85,7 @@ const displayData = (activities) => {
     `);
   });
 
-  dataTable.appendChild(tbody);
+  dataTable.append(tbody);
 }
 
 const calculateTotal = () => {
