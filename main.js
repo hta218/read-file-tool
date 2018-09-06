@@ -22,26 +22,21 @@ const handleUploadFile = (event) => {
   fileReader.onload = (event) => {
     let { result } = event.target;
     
-    let data = JSON.parse(result);
+    result = JSON.parse(result);
+    let dataToDisplay = [];
 
-    let activities1 = data.dates[0].sessions[0].activities;
-    let activities2 = data.dates[1].sessions[0].activities;
+    result.dates.map((date, i) => {
+      let { activities } = date.sessions[0];
+      activities = activities.map((act, j) => {
+        act.date = date.date;
+        return act;
+      });
 
-    activities1 = activities1.map((act, index) => {
-      act.date = data.dates[0].date;
-      return act
+      dataToDisplay = dataToDisplay.concat(activities);
     });
 
-    activities2 = activities2.map((act, index) => {
-      act.date = data.dates[1].date;
-      return act;
-    })
-
-    const activities = activities1.concat(activities2);
-    
-    displayData(activities);
+    displayData(dataToDisplay);
     $(".table-row").click((e) => handleSelectRow(e));
-
   }
 
   fileReader.readAsText(file);
