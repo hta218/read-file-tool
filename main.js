@@ -92,7 +92,7 @@ const calculateTotal = () => {
   let total = 0;
   data.map((pair, index) => {
     total += (pair.tail - pair.head);
-    total += 1;
+    total -= 1;
   })
 
   $("#result").text(total)
