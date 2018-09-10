@@ -16,9 +16,11 @@ $(document).ready(function(){
 
 const prepareData = () => {
   $("#result").text("");
+  // reset all app data;
   data = [];
   isHead = true;
   pair = {};
+  currentRow = -1;
 }
 
 const handleUploadFile = (event) => {
@@ -51,7 +53,7 @@ const handleUploadFile = (event) => {
 
 const handleSelectRow = (e) => {
   let row = e.currentTarget;
-  $(row).addClass('bg-primary');
+  $(row).toggleClass('bg-primary');
   let index = parseInt($(row).find('.index').text());
 
   handleSaveData(index);
