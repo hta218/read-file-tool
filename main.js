@@ -1,5 +1,5 @@
 //// whole data of app
-const data = []
+let data = []
 let isHead = true;
 let pair = {};
 
@@ -8,12 +8,18 @@ $(document).ready(function(){
 
   $("#file-input").change((e) => {
     handleUploadFile(e);
-    $("#result").text("");
+    prepareData();
   });
   
   $("#sum-up").click(() => calculateTotal());
 })
 
+const prepareData = () => {
+  $("#result").text("");
+  data = [];
+  isHead = true;
+  pair = {};
+}
 
 const handleUploadFile = (event) => {
   console.log("A file uploaded");
@@ -90,6 +96,7 @@ const displayData = (activities) => {
 
 const calculateTotal = () => {
   let total = 0;
+  
   data.map((pair, index) => {
     total += (pair.tail - pair.head);
     total -= 1;
