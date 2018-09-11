@@ -5,7 +5,7 @@ let indexList = [];
 let data = [];
 
 const selectedRowClassName = 'js-selected-index';
-const styleClassName = 'bg-secondary text-light';
+const styleClassName = 'bg-success text-light';
 
 $(document).ready(function(){
   console.log('File reader is running...');
@@ -43,6 +43,15 @@ const handleUploadFile = (event) => {
       });
 
       data = data.concat(activities);
+
+      // remove all "PAGEVIEW" typed action
+      data = data.filter(act => act.type === "EVENT");
+
+      // add an "index" key for each action for auto-calculating
+      data = data.map((act, index) => {
+        act.index = index + 1;
+        return act;
+      });
     });
 
     displayData(data);
@@ -80,10 +89,8 @@ const displayData = (activities) => {
   const tbody = document.createElement("tbody");
 
   activities.map((activity, index) => {
-    if (activity.type === 'PAGEVIEW') return;
-
     tbody.insertAdjacentHTML('beforeend', `
-      <tr class="table-row">
+      <tr class="table-row" data-index=${index + 1}>
         <td class="index">${index + 1}</td>
         <td>${activity.date}</td>
         <td>${activity.time}</td>
@@ -99,16 +106,17 @@ const displayData = (activities) => {
 const calculateTotal = () => {
   // TODO: do st when the number of numbs in data is odd
   let len = indexList.length
-  if (len % 2 === 1) { alert(`You select ${len} item(s), calculating might be wrong if the number if item is "ODD"`) };
+  if (len % 2 === 1) { alert(`You select ${len} item(s), calculating might be wrong if the number of items is "ODD"`) };
 
   /**
    * Assume that data = [1, 4, 5, 8, 9, 11]
-   * => total = (4-1) + (8-5) + (11-9) = [(4 + 8 + 11) - (1 + 5 + 9)] - (1 * 3)
+   * => total = (4-1) + (8-5) + (11-9) = [(4 + 8 + 11) - (1 + 5 + 9)]
+   * Final step:  total -= 3
    * 3 = data.length / 2
    */
-  let total = 0;
 
-  // Increasingly sort data
+  let total = 0;
+  // Increasingly sort indexes
   // Ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#Description
   indexList = indexList.sort((curr, next) => curr - next);
 
@@ -128,13 +136,46 @@ const calculateTotal = () => {
 
   total = oddIndexTotal - evenIndexTotal - indexList.length / 2;
 
+  // update UI
   $("#result").text(total);
 }
 
+const autoCalculate = () => {
+  clearMemory();
 
+  // get the earliest "Start Template" action
+  let startTemplateActions = data.filter(act => act.name === "Start Template");
+  let firststartTempAct = startTemplateActions[startTemplateActions.length - 1];
+
+  // get all "Publish" action after the firststartTempAct
+  let publicActions = data.filter(act => act.name === "Publish" && act.index < firststartTempAct.index);
+  let firstpublicAct = publicActions[publicActions.length - 1];
+
+  // push 2 index-es in indexList array for calculating actions
+  indexList.push(firstpublicAct.index);
+  indexList.push(firststartTempAct.index);
+
+  calculateTotal();
+  updateUI();
+}
+
+// This function is for auto-calculate case only
+const updateUI = () => {
+  let rows = $('tbody > tr');
+  let FIRST_START_TEMPLATE = indexList[1];
+  let FIRST_PUBLISH_AFTER_FIRST_START_TEMPLATE = indexList[0];
+
+  for (row of rows) {
+    let actionIndex = $(row).attr('data-index');
+    if ((FIRST_PUBLISH_AFTER_FIRST_START_TEMPLATE < actionIndex) && 
+        (actionIndex <  FIRST_START_TEMPLATE)) {
+          $(row).toggleClass(styleClassName);
+    }
+  }
+}
 
 const clearMemory = () => {
   indexList = [];
-  $(`.${selectedRowClassName}`).toggleClass(selectedRowClassName).toggleClass(styleClassName);
+  $('tr').removeClass(styleClassName);
   $("#result").text("");
 }
