@@ -1,5 +1,9 @@
 //// whole data of app
-let data = []
+// list of all action indexes
+let indexList = [];
+// all actions (in detail)
+let data = [];
+
 const selectedRowClassName = 'js-selected-index';
 const styleClassName = 'bg-secondary text-light';
 
@@ -15,6 +19,9 @@ $(document).ready(function(){
   // get the result
   $("#sum-up").click(() => calculateTotal());
 
+  // Auto count
+  $("#auto-count").click(() => autoCalculate());
+
   // reset all
   $("#clear").click(() => clearMemory());
 })
@@ -22,14 +29,12 @@ $(document).ready(function(){
 const handleUploadFile = (event) => {
   console.log("A file uploaded");
   let file = event.target.files[0]
-
   const fileReader = new FileReader();
+
   fileReader.onload = (event) => {
     let { result } = event.target;
     
     result = JSON.parse(result);
-    let dataToDisplay = [];
-
     result.dates.map((date, i) => {
       let { activities } = date.sessions[0];
       activities = activities.map((act, j) => {
@@ -37,10 +42,10 @@ const handleUploadFile = (event) => {
         return act;
       });
 
-      dataToDisplay = dataToDisplay.concat(activities);
+      data = data.concat(activities);
     });
 
-    displayData(dataToDisplay);
+    displayData(data);
     $(".table-row").click((e) => handleSelectRow(e));
   }
 
@@ -58,11 +63,11 @@ const handleSelectRow = (e) => {
 
 const handleSaveData = (index) => {
   // verify if index is in data
-  if (data.indexOf(index) === -1) {
-    data.push(index);
+  if (indexList.indexOf(index) === -1) {
+    indexList.push(index);
   } else {
     // remove index from data
-    data.splice(data.indexOf(index), 1);
+    indexList.splice(indexList.indexOf(index), 1);
   }
 }
 
@@ -93,7 +98,7 @@ const displayData = (activities) => {
 
 const calculateTotal = () => {
   // TODO: do st when the number of numbs in data is odd
-  let len = data.length
+  let len = indexList.length
   if (len % 2 === 1) { alert(`You select ${len} item(s), calculating might be wrong if the number if item is "ODD"`) };
 
   /**
@@ -105,29 +110,31 @@ const calculateTotal = () => {
 
   // Increasingly sort data
   // Ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort#Description
-  data = data.sort((curr, next) => curr - next);
+  indexList = indexList.sort((curr, next) => curr - next);
 
-  let evenIndexTotal = data.reduce((acc, curr, index) => {
+  let evenIndexTotal = indexList.reduce((acc, curr, index) => {
     if (index % 2 === 0) {
       acc += curr;
     }
     return acc; 
   }, 0);
 
-  let oddIndexTotal = data.reduce((acc, curr, index) => {
+  let oddIndexTotal = indexList.reduce((acc, curr, index) => {
     if (index % 2 !== 0) {
       acc += curr;
     }
     return acc;
   }, 0);
 
-  total = oddIndexTotal - evenIndexTotal - data.length / 2;
+  total = oddIndexTotal - evenIndexTotal - indexList.length / 2;
 
   $("#result").text(total);
 }
 
+
+
 const clearMemory = () => {
-  data = [];
+  indexList = [];
   $(`.${selectedRowClassName}`).toggleClass(selectedRowClassName).toggleClass(styleClassName);
   $("#result").text("");
 }
